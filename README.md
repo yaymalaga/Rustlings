@@ -1,11 +1,7 @@
 ## About
 
-Just after finishing The Book, I gave a try to the rustling exercises, in order to get an initial impression of the languague and my actual knowledge. 
+> Just after finishing The Book, I gave a try to the rustling exercises, in order to get an initial impression of the languague and my actual knowledge. 
 
-In this repo I have upload all my solutions. However, I still have some exercises to finish, such as *threads*, *standard_library_types* or *error_handling*.
+Some years afterwards, I decided to re-do the rustling exercises. This time, I managed to make it to the Fe-nish line!! ;)
 
-If you want to check the exercises, you can execute them with:
-```bash
-rustlings verify
-```
-Take a look to the official README in order to get all the dependencies: [https://github.com/rust-lang/rustlings](https://github.com/rust-lang/rustlings). All credits for them!
+Don't forget to check it out [rustlings](https://github.com/rust-lang/rustlings) repo and try their exercises by yourself!
