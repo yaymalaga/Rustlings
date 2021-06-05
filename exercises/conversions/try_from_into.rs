@@ -4,6 +4,7 @@
 // You can read more about it at https://doc.rust-lang.org/std/convert/trait.TryFrom.html
 use std::convert::{TryFrom, TryInto};
 use std::error;
+use std::fmt;
 
 #[derive(Debug, PartialEq)]
 struct Color {
@@ -11,8 +12,6 @@ struct Color {
     green: u8,
     blue: u8,
 }
-
-// I AM NOT DONE
 
 // Your task is to complete this implementation
 // and return an Ok result of inner type Color.
@@ -23,22 +22,55 @@ struct Color {
 // but the slice implementation needs to check the slice length!
 // Also note that correct RGB color values must be integers in the 0..=255 range.
 
+#[derive(Debug)]
+struct InvalidSizeTuple;
+
+impl error::Error for InvalidSizeTuple {}
+
+impl fmt::Display for InvalidSizeTuple {
+    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+        write!(f, "Tuple size is not 3")
+    }
+}
+
 // Tuple implementation
 impl TryFrom<(i16, i16, i16)> for Color {
     type Error = Box<dyn error::Error>;
-    fn try_from(tuple: (i16, i16, i16)) -> Result<Self, Self::Error> {}
+    fn try_from(tuple: (i16, i16, i16)) -> Result<Self, Self::Error> {
+        let red: u8 = tuple.0.try_into()?;
+        let green: u8 = tuple.1.try_into()?;
+        let blue: u8 = tuple.2.try_into()?;
+
+        Ok(Color { red, green, blue })
+    }
 }
 
 // Array implementation
 impl TryFrom<[i16; 3]> for Color {
     type Error = Box<dyn error::Error>;
-    fn try_from(arr: [i16; 3]) -> Result<Self, Self::Error> {}
+    fn try_from(arr: [i16; 3]) -> Result<Self, Self::Error> {
+        let red: u8 = arr[0].try_into()?;
+        let green: u8 = arr[1].try_into()?;
+        let blue: u8 = arr[2].try_into()?;
+
+        Ok(Color { red, green, blue })
+    }
 }
 
 // Slice implementation
 impl TryFrom<&[i16]> for Color {
     type Error = Box<dyn error::Error>;
-    fn try_from(slice: &[i16]) -> Result<Self, Self::Error> {}
+    fn try_from(slice: &[i16]) -> Result<Self, Self::Error> {
+        if slice.len() != 3 {
+            return Err(Box::new(InvalidSizeTuple));
+        }
+
+        let red: u8 = slice[0].try_into()?;
+        let green: u8 = slice[1].try_into()?;
+        let blue: u8 = slice[2].try_into()?;
+
+        Ok(Color { red, green, blue })
+    }
 }
 
 fn main() {

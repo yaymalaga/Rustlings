@@ -4,14 +4,13 @@
 // You can read more about it at https://doc.rust-lang.org/std/str/trait.FromStr.html
 use std::error;
 use std::str::FromStr;
+use std::fmt;
 
 #[derive(Debug)]
 struct Person {
     name: String,
     age: usize,
 }
-
-// I AM NOT DONE
 
 // Steps:
 // 1. If the length of the provided string is 0, an error should be returned
@@ -23,9 +22,36 @@ struct Person {
 // 5. If while extracting the name and the age something goes wrong, an error should be returned
 // If everything goes well, then return a Result of a Person object
 
+#[derive(Debug)]
+struct InvalidPersonData;
+
+impl error::Error for InvalidPersonData {}
+
+impl fmt::Display for InvalidPersonData {
+    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+        write!(f, "Data not valid")
+    }
+}
+
 impl FromStr for Person {
     type Err = Box<dyn error::Error>;
     fn from_str(s: &str) -> Result<Person, Self::Err> {
+        let data = s.split(',').collect::<Vec<_>>();
+        
+        if data.len() != 2 {
+            return Err(Box::new(InvalidPersonData))
+        }
+
+        let age = data[1].parse::<usize>();
+
+        if age.is_err() || data[0].is_empty() {
+            return Err(Box::new(InvalidPersonData))
+        }
+
+        Ok(Person {
+            name: data[0].to_string(),
+            age: age.unwrap(),
+        })
     }
 }
 
