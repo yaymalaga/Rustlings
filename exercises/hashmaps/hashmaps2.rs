@@ -1,4 +1,4 @@
-// hashmap2.rs
+// hashmaps2.rs
 
 // A basket of fruits in the form of a hash map is given. The key
 // represents the name of the fruit and the value represents how many
@@ -9,12 +9,11 @@
 //
 // Make me pass the tests!
 //
-// Execute the command `rustlings hint hashmap2` if you need
-// hints.
+// Execute `rustlings hint hashmaps2` or use the `hint` watch subcommand for a hint.
 
 use std::collections::HashMap;
 
-#[derive(Hash, PartialEq, Eq)]
+#[derive(Hash, PartialEq, Eq, Debug)]
 enum Fruit {
     Apple,
     Banana,
@@ -33,11 +32,7 @@ fn fruit_basket(basket: &mut HashMap<Fruit, u32>) {
     ];
 
     for fruit in fruit_kinds {
-        if let Some(quantity) = basket.get(&fruit) {
-            basket.insert(fruit, *quantity);
-        } else {
-            basket.insert(fruit, 5);
-        }
+        basket.entry(fruit).or_insert(5);
     }
 }
 

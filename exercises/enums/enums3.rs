@@ -1,11 +1,12 @@
 // enums3.rs
 // Address all the TODOs to make the tests pass!
+// Execute `rustlings hint enums3` or use the `hint` watch subcommand for a hint.
 
 enum Message {
     ChangeColor((u8, u8, u8)),
     Echo(String),
     Move(Point),
-    Quit
+    Quit,
 }
 
 struct Point {
@@ -38,10 +39,10 @@ impl State {
 
     fn process(&mut self, message: Message) {
         match message {
-            Message::ChangeColor(color) => self.color = color,
-            Message::Echo(text) => (),
-            Message::Move(point) => self.position = point,
-            Message::Quit => self.quit = true,
+            Message::ChangeColor(color) => self.change_color(color),
+            Message::Echo(info) => self.echo(info),
+            Message::Move(point) => self.move_position(point),
+            Message::Quit => self.quit(),
         }
     }
 }

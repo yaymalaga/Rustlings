@@ -4,12 +4,17 @@
 //
 // For these exercises the code will fail to compile when there are clippy warnings
 // check clippy's suggestions from the output to solve the exercise.
-// Execute `rustlings hint clippy1` for hints :)
+// Execute `rustlings hint clippy1` or use the `hint` watch subcommand for a hint.
+
+use std::f32::{self, consts::PI};
 
 fn main() {
-    let x = 1.2331f64;
-    let y = 1.2332f64;
-    if (y - x).abs() > f64::EPSILON {
-        println!("Success!");
-    }
+    let radius = 5.00f32;
+
+    let area = PI * f32::powi(radius, 2);
+
+    println!(
+        "The area of a circle with radius {:.2} is {:.5}!",
+        radius, area
+    )
 }

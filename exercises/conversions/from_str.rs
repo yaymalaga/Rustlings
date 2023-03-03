@@ -1,15 +1,31 @@
-// This does practically the same thing that TryFrom<&str> does.
+// from_str.rs
+// This is similar to from_into.rs, but this time we'll implement `FromStr`
+// and return errors instead of falling back to a default value.
 // Additionally, upon implementing FromStr, you can use the `parse` method
 // on strings to generate an object of the implementor type.
 // You can read more about it at https://doc.rust-lang.org/std/str/trait.FromStr.html
-use std::error;
-use std::str::FromStr;
-use std::fmt;
+// Execute `rustlings hint from_str` or use the `hint` watch subcommand for a hint.
 
-#[derive(Debug)]
+use std::num::ParseIntError;
+use std::str::FromStr;
+
+#[derive(Debug, PartialEq)]
 struct Person {
     name: String,
     age: usize,
+}
+
+// We will use this error type for the `FromStr` implementation.
+#[derive(Debug, PartialEq)]
+enum ParsePersonError {
+    // Empty input string
+    Empty,
+    // Incorrect number of fields
+    BadLen,
+    // Empty name field
+    NoName,
+    // Wrapped error from parse::<usize>()
+    ParseInt(ParseIntError),
 }
 
 // Steps:
@@ -19,39 +35,32 @@ struct Person {
 // 4. Extract the first element from the split operation and use it as the name
 // 5. Extract the other element from the split operation and parse it into a `usize` as the age
 //    with something like `"4".parse::<usize>()`
-// 5. If while extracting the name and the age something goes wrong, an error should be returned
+// 6. If while extracting the name and the age something goes wrong, an error should be returned
 // If everything goes well, then return a Result of a Person object
-
-#[derive(Debug)]
-struct InvalidPersonData;
-
-impl error::Error for InvalidPersonData {}
-
-impl fmt::Display for InvalidPersonData {
-    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
-        write!(f, "Data not valid")
-    }
-}
+//
+// As an aside: `Box<dyn Error>` implements `From<&'_ str>`. This means that if you want to return a
+// string error message, you can do so via just using return `Err("my error message".into())`.
 
 impl FromStr for Person {
-    type Err = Box<dyn error::Error>;
+    type Err = ParsePersonError;
     fn from_str(s: &str) -> Result<Person, Self::Err> {
-        let data = s.split(',').collect::<Vec<_>>();
-        
-        if data.len() != 2 {
-            return Err(Box::new(InvalidPersonData))
+        if s.is_empty() {
+            return Err(ParsePersonError::Empty);
         }
 
-        let age = data[1].parse::<usize>();
-
-        if age.is_err() || data[0].is_empty() {
-            return Err(Box::new(InvalidPersonData))
+        let split: Vec<_> = s.split(',').collect();
+        if split.len() != 2 {
+            return Err(ParsePersonError::BadLen);
         }
 
-        Ok(Person {
-            name: data[0].to_string(),
-            age: age.unwrap(),
-        })
+        let name = split[0].to_string();
+        if name.is_empty() {
+            return Err(ParsePersonError::NoName);
+        }
+
+        let age = split[1].parse::<usize>().map_err(|error| ParsePersonError::ParseInt(error))?;
+
+        Ok(Person { name, age })
     }
 }
 
@@ -66,7 +75,7 @@ mod tests {
 
     #[test]
     fn empty_input() {
-        assert!("".parse::<Person>().is_err());
+        assert_eq!("".parse::<Person>(), Err(ParsePersonError::Empty));
     }
     #[test]
     fn good_input() {
@@ -78,41 +87,56 @@ mod tests {
     }
     #[test]
     fn missing_age() {
-        assert!("John,".parse::<Person>().is_err());
+        assert!(matches!(
+            "John,".parse::<Person>(),
+            Err(ParsePersonError::ParseInt(_))
+        ));
     }
 
     #[test]
     fn invalid_age() {
-        assert!("John,twenty".parse::<Person>().is_err());
+        assert!(matches!(
+            "John,twenty".parse::<Person>(),
+            Err(ParsePersonError::ParseInt(_))
+        ));
     }
 
     #[test]
     fn missing_comma_and_age() {
-        assert!("John".parse::<Person>().is_err());
+        assert_eq!("John".parse::<Person>(), Err(ParsePersonError::BadLen));
     }
 
     #[test]
     fn missing_name() {
-        assert!(",1".parse::<Person>().is_err());
+        assert_eq!(",1".parse::<Person>(), Err(ParsePersonError::NoName));
     }
 
     #[test]
     fn missing_name_and_age() {
-        assert!(",".parse::<Person>().is_err());
+        assert!(matches!(
+            ",".parse::<Person>(),
+            Err(ParsePersonError::NoName | ParsePersonError::ParseInt(_))
+        ));
     }
 
     #[test]
     fn missing_name_and_invalid_age() {
-        assert!(",one".parse::<Person>().is_err());
+        assert!(matches!(
+            ",one".parse::<Person>(),
+            Err(ParsePersonError::NoName | ParsePersonError::ParseInt(_))
+        ));
     }
 
     #[test]
     fn trailing_comma() {
-        assert!("John,32,".parse::<Person>().is_err());
+        assert_eq!("John,32,".parse::<Person>(), Err(ParsePersonError::BadLen));
     }
 
     #[test]
     fn trailing_comma_and_some_string() {
-        assert!("John,32,man".parse::<Person>().is_err());
+        assert_eq!(
+            "John,32,man".parse::<Person>(),
+            Err(ParsePersonError::BadLen)
+        );
     }
 }
